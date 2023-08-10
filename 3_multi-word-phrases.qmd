@@ -1,0 +1,107 @@
+---
+title: "Multi-word phrases"
+format: html
+---
+
+We once again begins with reading in the libraries we'll need.
+
+## Loading the libraries we need
+
+```{r, include=FALSE}
+library(tidyverse)
+library(tidytext)
+library(readxl)
+```
+
+
+## Read in the text
+
+```{r}
+text_data = read_excel("data/gretil_example.xlsx")
+```
+
+## Word counts
+### Split text up into pairs of words
+We use the `unnest_tokens` 
+
+```{r}
+text_bigrams <- text_data |> 
+ unnest_tokens(bigram, value, token = "ngrams", n = 2)
+```
+
+Let's have a look!
+
+```{r}
+text_bigrams
+```
+
+### Count bigrams
+
+```{r}
+bigram_counts <- text_bigrams |> 
+  count(bigram, sort = TRUE)
+```
+
+Let's have a look:
+
+```{r}
+bigram_counts
+```
+
+### Visualise it
+
+Let's show the top 30 bigrams in a bar chart, ordered by count, and flip it on its side:
+
+```{r}
+bigram_counts |> 
+  slice(1:30) |> 
+  ggplot() +
+    geom_col(aes(x = reorder(bigram,n), n)) +
+    coord_flip()
+```
+
+
+Yay!
+
+### Exclude bigrams we don't care about
+
+We see that 'NA' is the most frequent thing -- let's exclude that using `!is.na`, i.e. 'not is NA'.
+
+Let's also exclude the ones the include our stop words from last time. We'll use `str_detect`, which looks for matches -- the `|` between the stop words means 'or':
+
+
+```{r}
+relevant_bigram_counts <- bigram_counts |> 
+  filter(!is.na(bigram)) |> 
+  filter(!str_detect(bigram, "tu|ca|na|te|sa"))
+```
+
+Let's have a look
+
+```{r}
+relevant_bigram_counts
+```
+
+Much better!!
+
+### Visualise again as a bar chart
+Let's visualise it again:
+
+```{r}
+relevant_bigram_counts |> 
+  slice(1:30) |> 
+  ggplot() +
+    geom_col(aes(x = reorder(bigram,n), n)) +
+    coord_flip()
+```
+
+Wiii!!
+
+### Visualise as a word cloud
+Finally, let's visualise this as a word cloud instead of as a bar chart
+
+```{r}
+relevant_bigram_counts |> 
+  wordcloud2()
+```
+

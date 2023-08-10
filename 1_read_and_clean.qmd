@@ -1,0 +1,71 @@
+---
+title: "Basic text mining"
+format: html
+---
+
+# Welcome to the tutorial!
+
+In this tutorial, we'll use .txt version of the Svacchanda-Tantra downloaded from Göttingen Register of Electronic Texts in Indian Languages ([GRETIL](https://gretil.sub.uni-goettingen.de/gretil.html) - you can find the text under 'saiva' [here](https://gretil.sub.uni-goettingen.de/gretil.html#RLSaiva)).
+
+## Reading in the libraries we need
+
+```{r, include=FALSE}
+library(tidyverse)
+library(writexl)
+```
+
+## Read in the text
+
+We'll use the function `read_lines` to read in the txt file line-by-line, and we save it in `text_raw`.
+
+The `|>` means 'do this next'.
+So after we've read the line by line, we'll put it in a spreadsheet-like format called a 'tibble', using the `as_tibble` function.
+
+We save the result of these operations in a new variable we call `text_raw`
+
+```{r}
+text_raw = read_lines("data/sa_svacchandatantra.txt") |> 
+  as_tibble()
+```
+
+## Clean the text
+
+Let's have a look by just typing the name of the variable:
+
+```{r}
+text_raw
+```
+
+### Removing empty lines
+
+All of the lines that were empty have an empty row in our variable.
+Let's remove them using the `filter` function which selects rows based on some condition.
+
+```{r}
+text_drop_empty_lines = text_raw |> 
+  filter(value != "")
+
+text_drop_empty_lines
+```
+
+Great, we're now down to 7,431 rows from 11,160!
+
+### Selecting only the lines that we care about
+
+We notice that the text only begins after the line with the text "\# Text".
+That's in row 43.
+
+Let's use the `slice` function to select just rows from row 44 until the end ('n()' gives us the total number of rows).
+
+```{r}
+relevant_text <- text_drop_empty_lines |> 
+  slice(44:n())
+```
+
+## Save out the text
+
+We'll save out the text as an excel file:
+
+```{r}
+write_xlsx(relevant_text, "data/gretil_example.xlsx")
+```
